@@ -1,8 +1,10 @@
+const cors = require('cors');
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 morgan.token('body', getPostData = (request) => {
     return request.method === 'POST' ? JSON.stringify(request.body) : ''
@@ -55,7 +57,10 @@ app.get('/info', (request, response) => {
     response.send(`<p>${text}</p> <p>${time}</p>`)
 })
 
-const generateID = () => Math.floor(Math.random()*1000) + 1
+const generateID = () => {
+    const idNum = Math.floor(Math.random() * 1000) + 1
+    return idNum.toString()
+}
 
 const inPhonebook = name => persons.map(person => person.name).includes(name)
 
@@ -88,14 +93,16 @@ app.post('/api/persons', (request, response) => {
 
     persons = persons.concat(person)
 
-    // response.json(person)
-    response.end()
+    response.json(person)
 })
+
+// app.put('/api/persons/:id', (request, response) => {})
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id
     persons = persons.filter(person => person.id !== id)
-    response.status(204).end()
+    console.log(id)
+    response.json({id: id})
 })
 
 const PORT = 3001
