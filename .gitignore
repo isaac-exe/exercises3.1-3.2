@@ -23,3 +23,5 @@ dist-ssr
 *.sw?
 /tester.http
 /prodtester.http
+/mongo.js
+/.env
