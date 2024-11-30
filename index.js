@@ -1,21 +1,20 @@
 require('dotenv').config()
 const Entry = require('./models/Entry')
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
 
-const requestLogger = (request, response, next) => {
-    console.log('Method:', request.method)
-    console.log('Path:  ', request.path)
-    console.log('Body:  ', request.body)
-    console.log('---')
-    next()
+const getPostData = (request) => {
+    return request.method === 'POST' ? JSON.stringify(request.body) : ''
 }
+
+morgan.token('body', getPostData)
 
 app.use(express.json())
 app.use(express.static('dist'))
 app.use(cors())
-app.use(requestLogger)
+app.use(morgan(':method :url :status :req[Content-Length] :res[Content-Length] :total-time ms :body'))
 
 app.get('/api/persons', (request, response) => {
     Entry.find({}).then(entries => {
@@ -112,6 +111,7 @@ const errorHandler = (error, request, response) => {
     } else {
         return response.status(400).send({ error: error.message })
     }
+
 }
 
 app.use(errorHandler)
