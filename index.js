@@ -1,20 +1,21 @@
 require('dotenv').config()
-const Entry = require('./models/Entry');
-const cors = require('cors');
+const Entry = require('./models/Entry')
 const express = require('express')
-const morgan = require('morgan')
-const body = require("express/lib/view");
 const app = express()
+const cors = require('cors')
+
+const requestLogger = (request, response, next) => {
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    next()
+}
 
 app.use(express.json())
 app.use(express.static('dist'))
 app.use(cors())
-
-morgan.token('body', getPostData = (request) => {
-    return request.method === 'POST' ? JSON.stringify(request.body) : ''
-})
-
-app.use(morgan(':method :url :status :req[Content-Length] :res[Content-Length] :total-time ms :body'))
+app.use(requestLogger)
 
 app.get('/api/persons', (request, response) => {
     Entry.find({}).then(entries => {
@@ -30,7 +31,7 @@ app.get('/api/persons/:id', (request, response, next) => {
             response.status(404).end()
         }
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
 })
 
 app.get('/info', (request, response, next) => {
@@ -64,7 +65,7 @@ app.post('/api/persons', (request, response, next) => {
     })
 
     entry.save()
-        .then(savedEntry =>{
+        .then(savedEntry => {
             response.json(savedEntry)
         }).catch(error => next(error))
 })
@@ -88,7 +89,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
     Entry.findByIdAndDelete(request.params.id)
-        .then(result => {
+        .then(() => {
             response.set('id', request.params.id)
             response.status(204).end()
         })
@@ -101,7 +102,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, request, response) => {
     console.error(error.message)
 
     if (error.name === 'CastError') {
@@ -111,8 +112,6 @@ const errorHandler = (error, request, response, next) => {
     } else {
         return response.status(400).send({ error: error.message })
     }
-
-    next(error)
 }
 
 app.use(errorHandler)
