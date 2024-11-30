@@ -82,7 +82,6 @@ app.put('/api/persons/:id', (request, response, next) => {
             response.json(updatedEntry)
         })
         .catch(error => {
-            console.log('hello')
             next(error)
         })
 })
